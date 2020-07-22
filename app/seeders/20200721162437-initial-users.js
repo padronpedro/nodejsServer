@@ -5,6 +5,7 @@ const faker = require('faker');
 const db = require('../models')
 const User = db.User
 const Role = db.Role
+const Sequelize = require('sequelize');
 
 const users = [...Array(15)].map((user) => (
   {
