@@ -25,13 +25,27 @@ var bcrypt = require('bcryptjs')
 //     })
 //     console.log(user)
 // })
+const Sequelize = require('sequelize');
+const Op = Sequelize.Op
 
-User.findOne({
+User.findAll({
     where: {
-        email: 'a@a.com'
+      id: {
+        [Op.gte]: 2
+      }
     }
-})
-.then(user => {
-    console.log(user)
-    return
-})
+  })
+  .then(users => {        
+    users.forEach(function (user) {
+        Role.findByPk(1)
+            .then(thisRole => {
+            user.setRoles(thisRole).then(()=>{})
+            })
+            .catch((err)=>{
+            console.log(err)
+            })
+        })
+  })      
+  .catch((err)=>{
+    console.log(err)
+  })
