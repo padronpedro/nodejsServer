@@ -1,6 +1,6 @@
-const db = require("../models");
-const User = db.User;
-const Role = db.Role;
+const models = require("../models");
+const User = models.User;
+const Role = models.Role;
 
 exports.allAccess = (req, res) => {
   res.status(200).send("Public Content.");
@@ -19,9 +19,78 @@ exports.moderatorBoard = (req, res) => {
 };
 
 /**
+ * Delete a user
+ * 
+ * @param id number 
+ * 
+ * @return JSON
+ */
+exports.deleteUser = (req,res) => {
+  let result = {
+    status: false,
+    message: '',
+    data: ''
+  }
+
+  User.destroy({
+    where: {
+      id: req.params.id
+    }
+  })
+    .then(user => {
+      if(!user){
+        return res.status(200).send(result);
+      }
+      result.status = true
+      return res.status(200).send(result);
+    })
+    .catch(error => {
+      result.message = error
+      return res.status(200).send(result);
+    })
+}
+
+/**
+ * Change user status
+ * 
+ * @param id number 
+ * 
+ * @return JSON 
+ */
+exports.changeStatus = (req, res) => {
+  let result = {
+    status: false,
+    message: '',
+    data: ''
+  }
+
+  
+  User.findByPk(req.body.params.id)
+  .then(user => {
+    if(!user){
+      return res.status(200).send(result);
+    }
+    user.update({
+      is_active: user.is_active ? 0 : 1
+    })
+    .then(updated => {
+      result.status = true;
+      return res.status(200).send(result);
+    })
+    .catch(error => {
+      result.message = error
+      return res.status(200).send(result);
+    })
+  })
+}
+
+/**
  * Get users for the data table.
  *
- * @param Request $request
+ * @param orderCol string
+ * @param sortDesc string
+ * @param limit number
+ * @param offset number
  *
  * @return json
  */
@@ -32,27 +101,34 @@ exports.getUsersForDataTable = (req, res) => {
     data: ''
   }
 
-  let orderCol = (req.body.sortBy == 'name') ? 'users.name' : req.body.sortBy ;
+  let orderCol = (req.query.sortBy) ? req.query.sortBy : 'name' ;
+  let sortDesc = (req.query.sortDesc) ? req.query.sortDesc : 'asc' ;
+  let limit = req.query.limit ? Number(req.query.limit) : 10; 
+  let offset = req.query.offset ? ((Number(req.query.offset)-1) * limit) : 0;
 
-  User.findAll({
-    option: [
-      orderCol, req.body.sortDesc
+  User.findAndCountAll({
+    attributes: ['id','name','email','is_active'],
+    limit: limit,
+    offset: offset,
+    order: [
+      [orderCol, sortDesc]
     ],
     include: [{
       model: Role,
-      required: true
+      required: true,
+      attributes: ['name']
     }]
   })
   .then(
     users => {
-
       result.data = users;
+      result.status = true;
       return res.status(200).send(result);
     }
   )
   .catch(err => {
     result.message = err.message;
-    res.status(200).send(result);
+    return res.status(200).send(result);
   });  
 };
   // public function getUsersForDataTable(Request $request)
