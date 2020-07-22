@@ -4,6 +4,7 @@ const cors = require("cors");
 const db = require("./app/models");
 
 const app = express();
+const routes = [];
 
 var corsOptions = {
   origin: "http://localhost:8080"
@@ -27,11 +28,22 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // simple route
 app.get("/", (req, res) => {
-  res.json({ message: "Welcome to pedro server." });
+  res.json({ 
+    message: "Welcome to pedro server.",
+    routes: JSON.stringify(routes, null, 2)
+  });
 });
+
 // routes
 require('./app/routes/auth.routes')(app);
 require('./app/routes/user.routes')(app);
+
+app._router.stack.forEach(middleware => {
+  if (middleware.route) {
+    routes.push(`${Object.keys(middleware.route.methods)} -> ${middleware.route.path}`);
+  }
+});
+
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8090;
