@@ -15,9 +15,8 @@ module.exports = (sequelize, DataTypes) => {
         models.Role,
         { 
           through: "RoleUsers",
-          foreignKey: "userId",
-          otherKey: "roleId",
-          onDelete: 'CASCADE'
+          onDelete: 'CASCADE',
+          hooks: true
         },
       );
     }
@@ -36,6 +35,10 @@ module.exports = (sequelize, DataTypes) => {
     },
     password: {
         type: DataTypes.STRING
+    },
+    is_active: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
     }
   }, {
     sequelize,
