@@ -30,19 +30,46 @@ module.exports = function(app) {
     controller.adminBoard
   );
 
-
+// datatable
   app.get(
     "/api/user/datatable",
     controller.getUsersForDataTable
   );
 
+// change status
   app.post(
     "/api/user/changestatus",
     controller.changeStatus
   );
 
+// delete user
   app.delete(
     '/api/user/:id',
     controller.deleteUser
   )
+
+  // get all user roles
+  app.get(
+    '/api/user/role/',
+    controller.getRole
+  )
+
+// get user data
+  app.get(
+    '/api/user/:id',
+    controller.getUser
+  )
+
+// update user data
+  app.put(
+    '/api/user/:id',
+    controller.updateUser
+  )
+
+// save new user
+  app.post(
+    '/api/user',
+    controller.addUser
+  )
+
 };

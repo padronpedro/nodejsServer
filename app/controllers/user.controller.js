@@ -1,6 +1,9 @@
 const models = require("../models");
 const User = models.User;
 const Role = models.Role;
+var bcrypt = require("bcryptjs");
+const Sequelize = require('sequelize');
+const Op = Sequelize.Op
 
 exports.allAccess = (req, res) => {
   res.status(200).send("Public Content.");
@@ -17,6 +20,120 @@ exports.adminBoard = (req, res) => {
 exports.moderatorBoard = (req, res) => {
   res.status(200).send("Moderator Content.");
 };
+
+/**
+ * Get user data
+ * 
+ * @param id number
+ * 
+ * @return JSON
+ */
+exports.getUser = (req, res) => {
+  let result = {
+    status: false,
+    message: '',
+    data: ''
+  }
+
+  User.findByPk(
+      req.params.id,
+      {
+        attributes: ['id','name','email'],
+        include: [
+          {
+            model: Role,
+            attributes: ['id','name']
+          }
+        ]
+      }
+    )
+    .then(user => {
+      if(user){
+        result.status = true
+        result.data = user
+      }else{
+        result.message = 'User not found'
+      }
+      return res.status(200).send(result)
+    })
+    .catch((error) => {
+      result.message = error
+      return res.status(200).send(result)
+    })
+}
+
+/**
+ * Add User
+ * 
+ * @param id number 
+ * @param name string 
+ * @param email string
+ * @param password string
+ * 
+ * @return JSON
+ */
+exports.addUser = (req, res) => {
+  let result = {
+    status: false,
+    message: '',
+    data: ''
+  }
+
+  User.findOrCreate(
+    {
+      where: {
+        email: {
+          [Op.eq]: req.body.params.email
+        }
+      },
+      defaults: {
+        name: req.body.params.name,
+        email: req.body.params.email,
+        password: bcrypt.hashSync(req.body.params.password, 8),
+      }
+    }
+  )
+  .then(([user, created]) => {
+    if(created){
+      user.setRoles(req.body.params.role_id).then(() => {});
+      result.status = true
+    }else{
+      result.message = 'Email already exists'
+    }
+    res.status(200).send(result)
+  })
+}
+
+/**
+ * Update user data
+ * 
+ * @param id number 
+ * @param name string 
+ * @param email string
+ * @param password string
+ * 
+ * @return JSON
+ */
+exports.updateUser = (req, res) => {
+  let result = {
+    status: false,
+    message: '',
+    data: ''
+  }
+
+  User.findByPk(req.params.id)
+    .then(user => {
+      user.update({
+        name: req.body.params.name,
+        email: req.body.params.email,
+        password: (req.body.params.password === '12345678') ? user.password : bcrypt.hashSync(req.body.params.password, 8),
+      })
+      user.setRoles(req.body.params.role_id).then(() => {});
+      result.status = true
+      res.status(200).send(result)
+    })
+
+}
 
 /**
  * Delete a user
@@ -131,6 +248,29 @@ exports.getUsersForDataTable = (req, res) => {
     return res.status(200).send(result);
   });  
 };
+
+/**
+ * Get Roles
+ * 
+ * @return JSON
+ */
+exports.getRole = (req,res) => {
+  let result = {
+    status: false,
+    message: '',
+    data: ''
+  }
+
+  Role.findAll({
+    attributes: ['id','name']
+  })
+  .then(roles => {
+    result.status = true
+    result.data = roles
+    return res.status(200).send(result)
+  })
+}
+
   // public function getUsersForDataTable(Request $request)
   //   {
   //       $query->leftJoin('countries','countries.id','=','users.country_id')
