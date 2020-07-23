@@ -5,6 +5,7 @@ const faker = require('faker');
 const db = require('../models')
 const User = db.User
 const Role = db.Role
+const Permission = db.Permission
 const Sequelize = require('sequelize');
 
 const users = [...Array(15)].map((user) => (
@@ -45,6 +46,13 @@ module.exports = {
             .then(thisRole => {
               user.setRoles(thisRole).then(()=>{})
             })
+          return user
+        })
+        .then((user) => {
+          Permission.findAll()
+          .then(allPermissions => {
+            user.setPermissions(allPermissions).then(()=>{})
+          })
         })
         .catch((err)=>{
           console.log(err)
