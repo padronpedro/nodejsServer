@@ -23,18 +23,13 @@ module.exports = {
       return queryInterface.bulkInsert('Roles', [
         {
           id: 1,
-          name: 'user',
-          createdAt: new Date(),
-          updatedAt: new Date()
+          name: 'user'
         },
         {
           id: 2,
-          name: 'admin',
-          createdAt: new Date(),
-          updatedAt: new Date()
+          name: 'admin'
         }
       ]);
-
     }).then(function(){
       return queryInterface.sequelize.query("SET FOREIGN_KEY_CHECKS = 1");
     }).catch(function(err){

@@ -11,9 +11,7 @@ const users = [...Array(15)].map((user) => (
   {
     name: faker.name.firstName(),
     email: faker.internet.email(),
-    password: faker.internet.password(8),
-    createdAt: new Date(),
-    updatedAt: new Date()
+    password: faker.internet.password(8)
   }
 ))
 
@@ -37,9 +35,7 @@ module.exports = {
         return queryInterface.bulkInsert('Users', [{
           name: 'a',
           password: bcrypt.hashSync('a', 8),
-          email: 'a@a.com',
-          createdAt: new Date(),
-          updatedAt: new Date()
+          email: 'a@a.com'
         }]);
     })
     .then(function(result){
