@@ -7,6 +7,7 @@ const User = db.User
 const Role = db.Role
 const Permission = db.Permission
 const Sequelize = require('sequelize');
+const Op = Sequelize.Op
 
 const users = [...Array(15)].map((user) => (
   {
@@ -28,44 +29,35 @@ module.exports = {
      * }], {});
     */
 
-   await queryInterface.sequelize.query("SET FOREIGN_KEY_CHECKS = 0")
-    .then(function(result){
-      return queryInterface.bulkDelete('Users', {}, { truncate: true })
-    })
-    .then(function(result){
-        return queryInterface.bulkInsert('Users', [{
+    await queryInterface.sequelize.query("SET FOREIGN_KEY_CHECKS = 0")
+
+    await queryInterface.bulkDelete('Users', {}, { truncate: true })
+
+    await queryInterface.bulkInsert('Users', [{
           name: 'a',
           password: bcrypt.hashSync('a', 8),
           email: 'a@a.com'
         }]);
-    })
-    .then(function(result){
-      return User.findByPk(1)
-        .then(user => {
-          Role.findByPk(2)
+
+    await queryInterface.bulkInsert('Users', users);   
+
+    const allPermissions = await Permission.findAll().then()
+
+    await User.findByPk(1)
+        .then(user => {          
+          return Role.findByPk(2)
             .then(thisRole => {
               user.setRoles(thisRole).then(()=>{})
+              return user
             })
-          return user
         })
-        .then((user) => {
-          Permission.findAll()
-          .then(allPermissions => {
-            user.setPermissions(allPermissions).then(()=>{})
+        .then(user => {
+          return user.setPermissions(allPermissions).then(()=>{ 
+            return true
           })
         })
-        .catch((err)=>{
-          console.log(err)
-        })
-    })
-    .then(function(result){
-      return queryInterface.bulkInsert('Users', users);   
-    })
-    .then(function(){
-      return queryInterface.sequelize.query("SET FOREIGN_KEY_CHECKS = 1");
-    }).catch(function(err){
-      console.log(err.message);
-    });
+    
+    await queryInterface.sequelize.query("SET FOREIGN_KEY_CHECKS = 1");
 
   },
 
