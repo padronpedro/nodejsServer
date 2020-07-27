@@ -1,25 +1,26 @@
 const models = require("../models");
 const User = models.User;
 const Role = models.Role;
+const Permission = models.Permission;
 var bcrypt = require("bcryptjs");
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op
 
-exports.allAccess = (req, res) => {
-  res.status(200).send("Public Content.");
-};
+// exports.allAccess = (req, res) => {
+//   res.status(200).send("Public Content.");
+// };
   
-exports.userBoard = (req, res) => {
-  res.status(200).send("User Content.");
-};
+// exports.userBoard = (req, res) => {
+//   res.status(200).send("User Content.");
+// };
   
-exports.adminBoard = (req, res) => {
-  res.status(200).send("Admin Content.");
-};
+// exports.adminBoard = (req, res) => {
+//   res.status(200).send("Admin Content.");
+// };
   
-exports.moderatorBoard = (req, res) => {
-  res.status(200).send("Moderator Content.");
-};
+// exports.moderatorBoard = (req, res) => {
+//   res.status(200).send("Moderator Content.");
+// };
 
 /**
  * Get user data
@@ -43,6 +44,10 @@ exports.getUser = (req, res) => {
           {
             model: Role,
             attributes: ['id','name']
+          },
+          {
+            model: Permission,
+            attributes: ['id']
           }
         ]
       }
@@ -95,7 +100,8 @@ exports.addUser = (req, res) => {
   )
   .then(([user, created]) => {
     if(created){
-      user.setRoles(req.body.params.role_id).then(() => {});
+      user.setRoles(req.body.params.role_id).then(() => {})
+      user.setPermissions(req.body.params.permissions).then(() => {})
       result.status = true
     }else{
       result.message = 'Email already exists'
@@ -129,10 +135,44 @@ exports.updateUser = (req, res) => {
         password: (req.body.params.password === '12345678') ? user.password : bcrypt.hashSync(req.body.params.password, 8),
       })
       user.setRoles(req.body.params.role_id).then(() => {});
+      user.setPermissions(req.body.params.permissions).then(() => {});
       result.status = true
       res.status(200).send(result)
     })
+}
 
+/**
+ * Update user data
+ * 
+ * @param id number 
+ * @param name string 
+ * @param email string
+ * @param password string
+ * 
+ * @return JSON
+ */
+exports.updateProfile = (req, res) => {
+  let result = {
+    status: false,
+    message: '',
+    data: ''
+  }
+
+  if (req.userId == req.body.params.id) {
+    User.findByPk(req.body.params.id)
+      .then(user => {
+        user.update({
+          name: req.body.params.name,
+          email: req.body.params.email,
+          password: (req.body.params.password === '12345678') ? user.password : bcrypt.hashSync(req.body.params.password, 8),
+        })
+        result.status = true
+        res.status(200).send(result)
+      })
+  }else{
+    result.message = 'You cannot modify this profile'
+    res.status(200).send(result)
+  }
 }
 
 /**
@@ -249,39 +289,3 @@ exports.getUsersForDataTable = (req, res) => {
   });  
 };
 
-/**
- * Get Roles
- * 
- * @return JSON
- */
-exports.getRole = (req,res) => {
-  let result = {
-    status: false,
-    message: '',
-    data: ''
-  }
-
-  Role.findAll({
-    attributes: ['id','name']
-  })
-  .then(roles => {
-    result.status = true
-    result.data = roles
-    return res.status(200).send(result)
-  })
-}
-
-  // public function getUsersForDataTable(Request $request)
-  //   {
-  //       $query->leftJoin('countries','countries.id','=','users.country_id')
-  //       $query->leftJoin('plans','plans.id','=','users.plan_id');
-  //       if(strlen($request->search)>0)
-  //       {
-  //           $query = $query->whereRaw(' (UPPER(TRIM(users.name)) like UPPER(TRIM(?)) OR UPPER(TRIM(users.email)) like UPPER(TRIM(?)))',["%$request->search%","%$request->search%"]);
-  //       }
-
-
-  //       $users = $query->paginate($request->itemsPerPage,['users.id as id','users.name as name','users.email as email','roles.name as role','users.is_active as is_active','countries.name as country_name', 'countries.code as country_code', 'plans.name as plan_name', 'users.plan_sms as plan_sms', 'users.sms_webhook as sms_webhook']);
-
-  //       return $users;
-  //   }

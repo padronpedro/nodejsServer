@@ -41,6 +41,15 @@ exports.signup = (req, res) => {
 };
 
 exports.signin = (req, res) => {
+  let result = {
+    id: '',
+    name: '',
+    email: '',
+    roles: '',
+    permissions: '',
+    accessToken: null
+  }
+
   User.findOne({
     where: {
       email: req.body.email
@@ -69,18 +78,30 @@ exports.signin = (req, res) => {
       });
 
       var authorities = [];
-      user.getRoles().then(roles => {
+      var permissionList = [];
+
+      user.getRoles()
+      .then(roles => {
         for (let i = 0; i < roles.length; i++) {
           authorities.push("ROLE_" + roles[i].name.toUpperCase());
         }
-        res.status(200).send({
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          roles: authorities,
-          accessToken: token
-        });
-      });
+      })
+      .then(() => {
+        user.getPermissions()
+        .then(permission => {
+          for (let i = 0; i < permission.length; i++) {
+            permissionList.push(permission[i].name.toUpperCase());
+          }
+          result.id = user.id
+          result.name = user.name
+          result.email = user.email
+          result.roles = authorities
+          result.permissions = permissionList
+          result.accessToken = token
+    
+          res.status(200).send(result);
+        })  
+      })
     })
     .catch(err => {
       res.status(500).send({ message: err.message });
