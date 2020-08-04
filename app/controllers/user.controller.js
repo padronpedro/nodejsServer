@@ -103,6 +103,7 @@ exports.addUser = (req, res) => {
       user.setRoles(req.body.params.role_id).then(() => {})
       user.setPermissions(req.body.params.permissions).then(() => {})
       result.status = true
+      result.data = { id: user.id }
     }else{
       result.message = 'Email already exists'
     }
