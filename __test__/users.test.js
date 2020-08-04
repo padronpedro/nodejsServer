@@ -21,8 +21,8 @@ beforeAll((done) => {
 
 describe('User controller', () => {
   // add user
-  test('It add an user', async (done) => {
-    return await request(app)
+  test('It add an user', (done) => {
+    return request(app)
       .post('/api/user')
       .set('x-access-token', token)
       .send({
