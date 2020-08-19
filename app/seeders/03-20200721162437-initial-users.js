@@ -9,7 +9,7 @@ const Permission = db.Permission
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op
 
-const users = [...Array(15)].map((user) => (
+const users = [...Array(5)].map((user) => (
   {
     name: faker.name.firstName(),
     email: faker.internet.email(),
