@@ -2,6 +2,7 @@
 
 const request = require('supertest');
 const app = require("../app");
+const userTest = require('./fixtures/myusers.json')
 
 let token;
 let userId ='';
@@ -10,8 +11,8 @@ beforeAll((done) => {
   request(app)
     .post('/api/auth/signin')
     .send({
-      email: 'a@a.com',
-      password: '321321321',
+      email: userTest[0].email,
+      password: userTest[0].password,
     })
     .end((err, response) => {
       token = response.body.accessToken; // save the token!
@@ -27,9 +28,9 @@ describe('User controller', () => {
       .set('x-access-token', token)
       .send({
         params: {
-          email: 't@t.com',
-          name: 'test',
-          password: 't'
+          email: userTest[1].email,
+          name: userTest[1].name,
+          password: userTest[1].password
         }
       })
       .then((response) => {
